@@ -1,0 +1,208 @@
+<apex:component controller="WidgetController">    
+    <style>             
+
+    
+   .bubble {
+	clear:left;
+	float:left;
+	width:100%;
+	margin-top:10px;
+	/*font-size: 1em;*/
+	font: normal 1em verdana, arial, helvetica, sans-serif;
+	border: 1px solid #996;
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+}
+.bubble .header{
+	background-color:#DBD9C0;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	-webkit-border-top-left-radius: 6px;
+	-webkit-border-top-right-radius: 6px;
+	-moz-border-radius-topleft: 6px;
+	-moz-border-radius-topright: 6px;
+	border: 1px solid #996;
+}
+.bubble .header h3 {
+	color: #444;
+	padding: 1px 0 0 1px;
+	margin: 1px 0 0 1px;
+	/*font-weight:normal;
+	font-size:100%;*/
+	font: normal 1.1em verdana, arial, helvetica, sans-serif;
+	font-family:inherit;
+	vertical-align:baseline;
+	text-align:left;
+} 
+.bubble ul {
+	margin:2px;
+	padding:2px;
+	list-style:none;
+	font-size:inherit;
+}
+.bubble li {
+	font-size:inherit;
+	margin-bottom:3px;
+	padding-bottom:3px;
+}
+
+.bubble a {
+	text-decoration:none;
+	color: #595959;
+}	
+.bubble a:hover {
+	text-decoration:none;
+	color:#dd7700;
+}
+
+ .table1 {
+	margin:4;
+	padding:4;
+	}
+.table1 table {
+		display:table;
+		width:100%;
+		/*border: 1px solid #000000;*/
+		border-collapse: collapse;
+		/*border: 2px solid #996;*/
+		font: normal 1em verdana, arial, helvetica, sans-serif;
+		color: #333;
+		/*background: ivory;*/
+		border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	}
+	/*.bubbletable thead th, tfoot th {
+		border: 1px solid #CC9;
+		text-align: left;
+		font-size: 1.2em;
+		font-weight: bold;
+		color: #444;
+		background: #DBD9C0;
+	}*/
+	.table1 tbody th, tbody td {
+		vertical-align: top;
+		text-align: left;
+		font-size: 1em;
+	}
+	.table1 tbody th {
+	text-align:right;
+	/*width:30%;*/
+	padding-right:5px;
+	margin-right:5px;
+	}
+	.table1 tbody td {
+	padding-left:5px;
+	margin-left:5px;
+	
+	}
+	.table1 td, th {
+	/*border: 1px solid #CC9;*/
+	/*padding: .3em;*/
+	}
+	
+			
+</style>
+    <script>
+    </script>
+    
+    <apex:attribute name="displayType" type="String" required="false" description="Display Type" />
+    <apex:attribute name="stringToSplit" type="String[]" assignTo="{!stringToSplit}" required="false" description="String to Split" />
+    <apex:attribute name="title" type="String" required="false" description="Title" />
+    <apex:attribute name="contact" type="String" required="false" description="Contact" />
+    <apex:attribute name="subTitle" type="String" required="false" description="Sub Title"/>
+    
+    <div class="bubble">
+		<div class="header" >
+		<h3>{!title}</h3>
+		</div>
+		<div class="table1">
+		<table columns="2">
+			<tbody>
+			<apex:repeat value="{!account_data}" var="r">
+				<tr>                      		            	                        		                		               
+		                    <td>                    
+		                        <apex:outputText value="{!r.label}" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		        			<td>
+		        				<apex:outputLink value="/{!contact}" rendered="{!IF(r.contentType=='LINK', true, false)}" >
+		        				<apex:outputText value="{!r.content}" /></apex:outputLink>
+		        				<apex:outputText value="{!r.content}" rendered="{!IF(r.contentType=='TEXT', true, false)}"/>
+		        			</td>	        			  
+			            </tr>
+			</apex:repeat>	
+				<!-- <tr>
+					<th>Account Owner:</th>
+					<td><apex:outputLink >Name</apex:outputLink></td>
+				</tr>
+				<tr>
+					<th>Status:</th>
+					<td><apex:outputLink >Status</apex:outputLink></td>
+				</tr>
+				<tr>
+					<th>Employee Count:</th>
+					<td><apex:outputLink >Count</apex:outputLink></td>
+				</tr>-->
+				
+				
+			</tbody>
+		</table>
+</div>
+		<!-- <ul>
+			<li><apex:outputLabel value="Account owner: "/><apex:outputLink >Name</apex:outputLink></li>
+			<li><apex:outputLabel value="Status: "/><apex:outputLink >Status</apex:outputLink></li>
+			<li><apex:outputLabel value="Employee Count: "/><apex:outputLink >Contacts</apex:outputLink></li>
+		</ul> -->
+	</div>
+     
+       <div class="bubble">
+		<div class="header" >
+		<h3>Activities to Move Next Stage</h3>
+		</div>
+		<ul>
+			<li><apex:inputCheckbox /><apex:outputLabel value="Activity 1"/></li>
+			<li><apex:inputcheckbox /><apex:outputLabel value="Activity 2"/></li>
+			<li><apex:inputCheckBox /><apex:outputLabel value="Activity 3"/></li>
+		</ul>
+	</div> 
+      <div class="bubble">
+		<div class="header" >
+		<h3>Similar Opportunities</h3>
+		</div>
+		<table>
+			<tbody>
+				<tr>
+					<td><apex:outputLink >OppName1,&nbsp;</apex:outputLink></td>
+					<td><apex:outputLabel >#ofEmployees,&nbsp;</apex:outputLabel></td>
+					<td><apex:outputLabel >Status,&nbsp;</apex:outputLabel></td>
+					<td><apex:outputLabel >DateClosed</apex:outputLabel></td>
+				</tr>
+				<tr>
+					<td><apex:outputLink >OppName2,&nbsp;</apex:outputLink></td>
+					<td><apex:outputLabel >#ofEmployees,&nbsp;</apex:outputLabel></td>
+					<td><apex:outputLabel >Status,&nbsp;</apex:outputLabel></td>
+					<td><apex:outputLabel >DateClosed</apex:outputLabel></td>
+				</tr>
+				<tr>
+					<td><apex:outputLink >OppName3,&nbsp;</apex:outputLink></td>
+					<td><apex:outputLabel >#ofEmployees,&nbsp;</apex:outputLabel></td>
+					<td><apex:outputLabel >Status,&nbsp;</apex:outputLabel></td>
+					<td><apex:outputLabel >DateClosed</apex:outputLabel></td>
+				</tr>
+			</tbody>
+		</table>
+	</div> 
+	 <div class="bubble">
+		<div class="header" >
+		<h3>Actions</h3>
+		</div>
+		<ul>
+			<li><apex:outputLink >Submit for Approval</apex:outputLink></li>
+			<li><apex:outputLink >Generate Contract</apex:outputLink></li>
+			<li><apex:outputLink >Log a Call</apex:outputLink></li>
+		</ul>
+	</div> 
+	
+     
+     
+</apex:component>

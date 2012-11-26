@@ -1,0 +1,357 @@
+<apex:component controller="MyOpportunityEditController" >
+<apex:attribute name="oppty" type="Opportunity" assignTo="{!oppty}" required="true" description="Opportunity to update."/>
+<style>
+
+
+/*#content {
+  -webkit-transition: margin-left 1s ease-in-out;
+  -moz-transition: margin-left 1s ease-in-out;
+  -o-transition: margin-left 1s ease-in-out;
+   width:100%;
+		    position:relative;
+		    height:100%;
+  display: inline;
+ // height: 20px;
+  background: red;
+  color: white;
+}*/
+/*#content.left {
+  margin-left: 0;
+}
+#content.right {
+  margin-left: 780px;
+}​*/
+/* #steps{
+		    width:800px;
+			//height:320px;
+		    overflow:hidden;
+		}
+		.step{
+		    float:left;
+		    width:800px;
+		    border: none;
+			//height:320px;
+		}
+*/
+
+
+		
+/*#steps form fieldset{
+		    border:none;
+		    padding-bottom:20px;
+		}*/
+		
+
+</style>
+
+
+<script>
+$(document).ready(function(){
+      	function bindNavigation(widths, current, fieldsetCount) {
+				/*
+					when clicking on a navigation link 
+					the form slides to the corresponding fieldset
+				*/
+			    $('#navigation a').bind('click',function(e){
+					var $this	= $(this);
+					var prev	= current;
+					$this.closest('ul').find('li').removeClass('selected');
+			        $this.parent().addClass('selected');
+					/*
+						we store the position of the link
+						in the current variable	
+					*/
+					current = $this.parent().index() + 1;
+					/*
+						animate / slide to the next or to the corresponding
+						fieldset. The order of the links in the navigation
+						is the order of the fieldsets.
+						Also, after sliding, we trigger the focus on the first 
+						input element of the new fieldset
+						If we clicked on the last link (confirmation), then we validate
+						all the fieldsets, otherwise we validate the previous one
+						before the form slided
+					*/
+			        $('#steps').stop().animate({
+			            marginLeft: '-' + (widths[current-1] + (55*(current-1))) + 'px'
+			    		
+			        },500,function(){
+						/*if(current == fieldsetCount)
+							validateSteps(fieldsetCount);
+						else
+							validateStep(prev, fieldsetCount);*/
+						$('form[name$="opportunityWizardForm"]').find('fieldset:nth-child('+ parseInt(current) +')').find(':input:first').focus();	
+					});
+			        e.preventDefault();
+			    });
+			    return current;
+			}					      		
+			
+			function onTabClick() {	
+				/*
+					clicking on the tab (on the last input of each fieldset), makes the form
+					slide to the next step
+				*/
+				$('fieldset').each(function(){
+					var $fieldset = $(this);
+					$fieldset.children(':last').find(':input').keydown(function(e){
+						if (e.which == 9){
+							$('#navigation li:nth-child(' + (parseInt(current)+1) + ') a').click();
+							/* force the blur for validation */
+							$(this).blur();
+							e.preventDefault();
+						}
+					});
+				});
+			}
+
+			function initialize(){
+			    
+				/*
+					number of fieldsets
+				*/
+				var fieldsetCount = $('fieldset').length;
+				/*alert('fieldsetcount ' + fieldsetCount);*/
+				/*
+					current position of fieldset / navigation link
+				*/
+				var current = 1;
+				/*
+					sum and save the widths of each one of the fieldsets
+					set the final sum as the total width of the steps element
+				*/
+				
+				var stepsWidth	= 0;
+				var widthToAdjust = 0;
+			    var widths = new Array();
+				$('#steps .step').each(function(i){
+			        var $step 		= $(this);
+					widths[i]  		= stepsWidth;
+					widthToAdjust 	= $step.width();
+			        stepsWidth	 	+= $step.width();
+			      
+			    });
+			  
+				$('#steps').width(stepsWidth+widthToAdjust);
+				
+				/*
+					to avoid problems in IE, focus the first input of the form
+				*/
+				$('form[name$="opportunityWizardForm"]').find('fieldset:first').find(':input:first').focus();	
+				
+				/*
+					show the navigation bar
+				*/
+				$('#navigation').show();
+				
+				/*
+					Bind navigation 
+				*/
+				current = bindNavigation(widths, current, fieldsetCount);
+				
+				/* 
+					Handle Tab Click
+				*/
+				onTabClick(current);
+				
+      		};
+
+			initialize();	
+					
+		});
+		
+		
+	
+</script>
+<style>
+.table {
+
+
+}
+
+.table tbody th, tbody td {
+	padding-bottom:10px;
+	margin-bottom:10px;
+	/*padding-right: 25px;*/
+	margin-right:25px;
+}
+#wrapper {
+	width:720px;
+	height:270px;
+	/*width:500%;
+	height:72%;*/
+	overflow:hidden;
+	
+}
+
+#steps{	
+		/*width:720px;*/
+		float:left;
+		width:400px;
+		height:280px;
+		/*width:20%;
+		height:100%;*/
+		overflow:hidden;
+		}
+		.step{
+		    float:left;
+		    margin-left:20px;
+		    padding-left:20px;
+		    height:255px;
+		    width:750px;
+		 border: none;
+	
+		}
+
+</style>
+<div id="wrapper">
+
+<div id="steps">
+	 <fieldset class="step">
+     	<legend class="fieldsetlegand" >Opportunity Information</legend>
+	    <table class="table1">
+	    	<tbody>
+	    		<tr>
+	    			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Name.label}"/> </td>
+    				<td><apex:inputField id="opportunityname" value="{!oppty.Name}" /></td>
+	          		<td><apex:outputLabel value="{!$ObjectType.Account.fields.Name.label}" /></td> 
+	             	<td><apex:inputfield id="accountname" value="{!oppty.AccountId}" /></td>
+	         	</tr>
+	         	<tr>
+	         		<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Type.label}" /></td> 
+	             	<td><apex:inputfield id="opptyType" value="{!oppty.Type}" /></td>
+	             	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Sales_Channel__c.label}" /></td> 
+	             	<td><apex:inputfield id="salesChannel" value="{!oppty.Sales_Channel__c}" /></td>
+	         	</tr>
+	        	<tr>
+	        	  	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.LeadSource.label}" /></td> 
+	            	<td><apex:inputfield id="leadsource" value="{!oppty.LeadSource}" /></td>
+	            	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.CloseDate.label}" /></td> 
+	            	<td><apex:inputfield id="closeDate" value="{!oppty.CloseDate}" /></td>
+	         	</tr>
+	         	<tr>
+	             	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.StageName.label}" /></td> 
+	             	<td><apex:inputfield id="stageName" value="{!oppty.StageName}" /></td>
+	    	        <td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Contract_Term_Months__c.label}" /></td> 
+	             	<td><apex:inputfield id="contractTerms" value="{!oppty.Contract_Term_Months__c}" /></td>
+	        	</tr>
+	    	</tbody>
+	    </table>      
+	</fieldset> 
+
+
+  <fieldset class="step" >
+     	<legend class="fieldsetlegand" >Qualification</legend>
+	 </fieldset>
+	 
+	 
+	 
+	<fieldset class="step">
+		<legend class="fieldsetlegand">Description Information</legend>
+		<table>
+			<tbody>	
+		     	<tr>
+		     		<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Description.label}" /></td> 
+		         	<td><apex:inputTextArea richText="true" rows="10" id="description" value="{!oppty.Description}" /></td>
+		     	</tr>
+		     </tbody>
+		</table>
+	</fieldset>
+	 
+	 <fieldset class="step" >
+        <legend class="fieldsetlegand">Order Billing &amp; Shipping Address</legend>
+        <table class="table">
+        	<tbody>
+	        	<tr>
+	        		<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Contact__c.label}" /></td> 
+	       			<td><apex:inputField id="orderBillingContact" value="{!oppty.Order_Billing_Contact__c}" /></td>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Email__c.label}" /></td> 
+	                <td><apex:inputField id="orderBillingEmail" value="{!oppty.Order_Billing_Email__c}" /></td>
+	       		</tr>
+	       		<tr>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Address_1__c.label}" /></td> 
+	                <td><apex:inputField id="orderBillingAddr1" value="{!oppty.Order_Billing_Address_1__c}" /></td>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Address_1__c.label}" /></td> 
+	                <td><apex:inputField id="orderShippingAddr1" value="{!oppty.Order_Shipping_Address_1__c}" /></td>
+	       		</tr>
+	       		<tr>
+	            	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Address_2__c.label}" /></td> 
+	                <td><apex:inputField id="orderBillingAddr2" value="{!oppty.Order_Billing_Address_2__c}" /></td>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Address_2__c.label}" /></td> 
+	                <td><apex:inputField id="orderShippingAddr2" value="{!oppty.Order_Shipping_Address_2__c}" /></td>
+	       		</tr>
+	       		<tr>
+	            	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_City__c.label}" /></td> 
+	                <td><apex:inputField id="orderBillingCity" value="{!oppty.Order_Billing_City__c}" /></td>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_City__c.label}" /></td> 
+	                <td><apex:inputField id="orderShippingCity" value="{!oppty.Order_Shipping_City__c}" /></td>
+	       		</tr>
+	       		<tr>
+	            	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_State_Province__c.label}" /></td> 
+	                <td><apex:inputField id="orderBillingState" value="{!oppty.Order_Billing_State_Province__c}" /></td>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_State__c.label}" /></td> 
+	                <td><apex:inputField id="orderShippingState" value="{!oppty.Order_Shipping_State__c}" /></td>
+	      		</tr>
+	       		<tr>
+	            	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Country__c.label}" /></td> 
+	                <td><apex:inputField id="orderBillingCountry" value="{!oppty.Order_Billing_Country__c}" /></td>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Country__c.label}" /></td> 
+	                <td><apex:inputField id="orderShippingCountry" value="{!oppty.Order_Shipping_Country__c}" /></td>
+	       		</tr>
+	       		<tr>
+	            	<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Zip_Code__c.label}" /></td> 
+	                <td><apex:inputField id="orderBillingZip" value="{!oppty.Order_Billing_Zip_Code__c}" /></td>
+	       			<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Postal_Zip__c.label}" /></td> 
+	                <td><apex:inputField id="orderShippingZip" value="{!oppty.Order_Shipping_Postal_Zip__c}" /></td>
+	       		</tr>
+       		</tbody>
+       </table>                          
+    </fieldset>             
+	<fieldset class="step" >
+	    <legend class="fieldsetlegand">Order Information</legend>
+	    <table class="table">
+	    	<tbody>
+	     	<tr>
+	     		<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Payment_Period__c.label}" /></td>
+	     		<td><apex:inputField id="paymentPeriod" value="{!oppty.Payment_Period__c}" /></td>
+	     	</tr>
+	     	<tr>
+	     		<td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.Payment_Method__c.label}" /></td> 
+	             <td><apex:inputField id="paymentMethod" value="{!oppty.Payment_Method__c}" /></td>
+	         </tr>
+	         <tr>
+	             <td><apex:outputLabel value="{!$ObjectType.Opportunity.fields.PO_Required__c.label}" /></td> 
+	             <td><apex:inputField id="poRequired" value="{!oppty.PO_Required__c}" /></td>
+	         </tr>
+	    	</tbody>
+	    </table>
+	                                  
+	</fieldset>  
+</div>	
+
+</div>
+	<div id="navigation" style="display:none">
+                <ul>
+                    <li class="selected">
+                        <a href="#">Opportunity Information</a>
+                    </li>
+                    <li>
+                        <a href="#">Qualification</a>
+                    </li>
+                    <li>
+                        <a href="#">Description</a>
+                    </li>
+                    <li id="orderBilling">
+                        <a href="#">Order Billing &amp; Shipping Address</a>
+                    </li>
+                    <li id="orderInformation">
+                        <a href="#">Order Information</a>
+                    </li>
+                </ul>
+            </div>                     
+        
+
+
+
+
+</apex:component>

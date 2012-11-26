@@ -1,0 +1,242 @@
+<apex:page id="thepage" tabStyle="My_Opportunities__tab" standardController="Opportunity"  extensions="OppMassEdit"  action="{!init}" recordSetVar="opportunities"  sidebar="false" showheader="true" standardstylesheets="false" >
+	<head>
+		<apex:stylesheet value="{!$Resource.OppStyle}"/>
+		<apex:includescript value="{!URLFOR($Resource.JQueryUI,'js/jquery-1.8.0.min.js')}"/>
+		<apex:includescript value="{!URLFOR($Resource.JQueryUI,'js/jquery-ui-1.8.23.custom.min.js')}"/>
+		<apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'css/opptheme/jquery-ui-1.8.23.custom.css')}"/>
+		<script type="text/javascript">
+		function launch(){
+				$("#fieldedit").dialog({height: 250, width: 400, title: 'Update Values',
+				modal: true});
+			};
+		function checkAll(cb)
+		{
+			var inputElem = document.getElementsByTagName("input");
+			for(var i=0; i<inputElem.length; i++)
+			{
+			if(inputElem[i].id.indexOf("checklog")!=-1)
+				inputElem[i].checked = cb.checked;
+			}
+		}; 
+		function setfocus() {
+						document.getElementById('dummy').focus();
+					};
+		function datePrompt() {
+		$( ".oppUpdateCloseDate" ).datepicker();
+		};
+		/*$(function() {
+		$( "#oppUpdateCloseDate" ).datepicker({buttonImageOnly: true});
+	});*/
+		</script>
+		<style>
+			.opptable {
+					margin:15px;
+					padding:15px;
+			}
+			.opptable table {
+				display:table;
+				width:100%;
+				border: 1px solid #000000;
+				border-collapse: collapse;
+				border: 2px solid #996;
+				font: normal 80%/140% verdana, arial, helvetica, sans-serif;
+				color: #333;
+				background: ivory;
+			}
+			.opptable thead th, tfoot th {
+				border: 1px solid #CC9;
+				text-align: left;
+				font-size: 1.2em;
+				font-weight: bold;
+				color: #444;
+				background: #DBD9C0;
+			}
+			.opptable tbody th, tbody td {
+				vertical-align: top;
+				text-align: left;
+				font-size: 1.1em;
+			}
+			.opptable td, th {
+			border: 1px solid #CC9;
+			padding: .3em;
+			}
+			
+			.submit {
+		    height:25px;
+		    padding-top:5px;
+		    padding-bottom:5px;
+		    /*background-color:#e9e9e9;*/
+		    //background-color:#DDF0F8;
+		    /*border-top:1px solid #fff;*/
+		    //border-top:1px solid #99CCE6;
+		    -moz-border-radius:0px 0px 10px 10px;
+		    -webkit-border-bottom-left-radius:10px;
+		    -webkit-border-bottom-right-radius:10px;
+		    border-bottom-left-radius:10px;
+		    border-bottom-right-radius:10px;
+		}
+		.submit ul{
+		    list-style:none;
+			float:left;
+			margin-left:40%;
+		}
+		.submit ul li{
+			float:left;
+		    border-right:1px solid #ccc;
+		    border-left:1px solid #ccc;
+		    position:relative;
+			margin:0px 2px;
+		}
+		.submit ul li a{
+		    display:block;
+		    height:25px;
+		    background-color:#444;
+		    color:#fff;
+		    outline:none;
+		    font-weight:normal;
+		    text-decoration:none;
+		    line-height:25px;
+		    padding:0px 10px;
+		    border-right:1px solid #045A8B;
+		    border-left:1px solid #045A8B;
+		    border-radius: 3px;
+		    background:#f0f0f0;
+		    background:
+		    -webkit-gradient(linear, 0% 0%, 0% 100%, from(#73AEC9), color-stop(0.05, #73AEC9), color-stop(0.05, #338AB0), to(#0571A6));
+		        /*-webkit-gradient(
+		        linear,
+		        left bottom,
+		        left top,
+		        color-stop(0.09, rgb(240,240,240)),
+		        color-stop(0.55, rgb(227,227,227)),
+		        color-stop(0.78, rgb(240,240,240))
+		        );*/
+		    background:
+		        -moz-linear-gradient(
+		        center bottom,
+		        rgb(240,240,240) 9%,
+		        rgb(227,227,227) 55%,
+		        rgb(240,240,240) 78%
+		        )}
+		 
+			
+			
+			
+		</style>
+	
+	</head>
+	<body>
+	<apex:messages />
+     
+	
+		<div id="fieldedit" class="window" style="display: none">
+		<apex:include pageName="OppMassEdit"/>
+     	</div>
+     		<apex:form id="theform">
+			<!-- <apex:actionFunction name="ListChange" action="{!RefreshTable}" rerender="myOpps,OpportunityLists"/> -->
+			<apex:actionFunction name="setFocus" focus="click" rerender="out" />
+			<!-- <apex:panelGrid columns="6">
+				<apex:inputField id="dummy" rendered="false"/>
+	            <apex:outputLabel id="viewLabel" value="View:"/>
+	            <apex:selectList value="{!filterid}" size="1">
+	                <apex:actionSupport event="onchange" action="{!RefreshTable}" rerender="items"/>
+	                <apex:selectOptions value="{!listviewoptions}"/>
+	            </apex:selectList>
+	            <apex:outputLink value="#" id="editLV">Edit</apex:outputLink>
+	            &nbsp;|&nbsp;
+	            <apex:outputLink value="#" id="createLV">Create New View</apex:outputLink> 
+		</apex:panelGrid>
+		<apex:outputPanel id="items">
+			Opportunities: {!selectedOpportunities}
+			<br/>FilterId: {!filterId}
+		</apex:outputPanel> -->		  
+		<div class="opptable"> 
+			<apex:actionFunction name="checkChanged" action="{!verifyOneCheck}" rerender="whatIdOptions"/>
+			<div class="submit">
+				<ul>
+					<li><apex:commandlink value="Mass Edit" onclick="launch(); return false;"/></li>
+					<li><apex:commandLink value="Save" action="{!SaveOpportunities}"/></li>
+				</ul>
+			</div>
+			<!-- <apex:commandButton value="Mass Edit" onclick="launch(); return false;"/>
+			<apex:commandButton value="Edit"/>
+			<apex:commandButton value="Save" action="{!SaveOpportunities}"/> -->
+			<apex:outputPanel id="oppPanel">
+			 	<table  id="myOpps" class="tablesorter">
+					<thead>
+						<tr>
+							<th><apex:inputCheckbox id="selectAll" >
+		                          	<apex:actionSupport event="onclick" action="{!GetSelected}" onsubmit="checkAll(this);" oncomplete="checkChanged();" rerender="items"/>
+		                          	</apex:inputCheckbox>Select All</th> 
+							<th>Name</th>
+							<th>Close Date</th>
+							<th>Type</th>
+							<th>Stage</th>
+						</tr>
+					</thead>
+					<tbody>
+						<apex:repeat var="o" value="{!OpportunityList}">
+						<tr>
+						 <td><apex:inputCheckBox value="{!o.selected}" id="checklog"  onchange="checkChanged();" >
+						 <apex:actionSupport event="onclick" action="{!GetSelected}" rerender="items"/>
+						 </apex:inputCheckBox>&nbsp;|&nbsp;<apex:commandLink value="Edit" id="editCommandLink" action="{!editOppy}" target="_self"><apex:param name="oid" value="{!o.opp.id}" assignTo="{!editId}"/></apex:commandLink></td>
+					 		<td><apex:outputField value="{!o.opp.name}" >
+					 		<!-- <apex:actionSupport event="ondblclick" action="{!GetSelected}" onsubmit="checkChanged();" rerender="items"/>-->
+					 			<apex:inlineEditSupport event="ondblclick" />
+					 			</apex:outputField></td>
+							<td><apex:outputField value="{!o.opp.closeDate}">
+								<!--   <apex:inlineEditSupport event="ondblclick"/> -->
+								</apex:outputfield></td> 
+							<td><apex:outputField value="{!o.opp.type}">
+								<apex:inlineEditSupport event="ondblclick"/>
+								</apex:outputField></td>
+							<td><apex:outputField value="{!o.opp.stageName}">
+								<apex:inlineEditSupport event="ondblclick"/>
+								</apex:outputField></td>
+			        	</tr>
+			       		</apex:repeat>
+			    	</tbody>
+				</table>
+				</apex:outputPanel>		
+			</div>	
+	 		<div class="opptable">
+				<!-- <apex:pageMessages />-->
+				<apex:outputPanel id="oppPanel2">
+					<div class="submit">
+						<ul>
+							<li><apex:commandLink value="Save" action="{!saveLog}"/></li>
+							<li><apex:commandLink value="Save and New" action="{!saveLogAndNew}"/></li>
+						</ul>
+					</div>
+					<!-- <apex:commandButton value="Save" action="{!saveLog}" />                            
+	                    <apex:commandButton value="Save And New" action="{!saveLogAndNew}"/> -->
+						<table>
+							<thead>
+								<tr>
+									<th>Related To</th>
+									<th>Subject</th>
+									<th>Status</th>
+									<th>Priority</th>
+									<th>Active Currency</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><apex:selectList id="whatIdOptions" value="{!task.whatId}" multiselect="false" size="1" onchange="" >
+					       				<apex:selectOptions value="{!whatIdOptions}"/>
+										</apex:selectList></td>
+							     	<td><apex:inputField value="{!task.Subject}" /></td>
+							     	<td><apex:inputField value="{!task.Status}"/></td>
+							     	<td><apex:inputField value="{!task.Priority}"/></td>
+							     	<td><apex:inputField value="{!task.CurrencyIsoCode}"/></td>
+			     					<td><apex:inputTextArea id="noteField" value="{!task.description}" cols="50" rows="5"/><br/></td>
+								</tr>
+							</tbody>
+						</table>
+					
+				</apex:outputPanel>	
+			</div>
+		</apex:form>
+	</body>	
+</apex:page>

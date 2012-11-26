@@ -1,0 +1,67 @@
+<apex:page standardController="Opportunity"  extensions="ListViewExtension,OppMassEdit"  recordSetVar="opportunities"  sidebar="false" standardstylesheets="true" >
+
+
+	
+			
+			
+			
+			
+			<apex:commandButton value="Save" action="{!save}"/>
+		
+		   <apex:panelGrid columns="4">
+      			<apex:outputLabel value="View:"/>
+      			<apex:selectList value="{!filterId}" size="1"> 
+        			<apex:actionSupport event="onchange" rerender="list"/> 
+        			<apex:selectOptions value="{!listviewoptions}"/>  
+      			</apex:selectList>
+      			</apex:panelGrid>
+      			<apex:commandLink value="Create New View" action="{!createListView}">
+      			<apex:param name="q" value="{!filterId}" assignTo="{!currentListView}"/>
+
+    		 <apex:actionFunction name="checkChanged" action="{!verifyOneCheck}"/>
+	
+				<apex:pageblockTable value="{!opportunities}" var="o" width="100%"  id="list">
+		
+					  <apex:inputCheckBox value="{!o.selected}" id="checklog" onchange="checkChanged();">
+					
+						</apex:inputCheckBox>
+						&nbsp;|&nbsp;
+						<apex:commandLink value="Edit" id="editCommandLink" target="_blank">
+							<apex:param name="opptyIdToEdit" value="{!o.Id}" assignTo="{!opptyIdToEdit}"/>
+				
+				    	
+				        <apex:outputField value="{!o.name}">
+				       
+				        <apex:outputField value="{!o.closeDate}">
+				      
+				        <apex:outputField value="{!o.type}">
+				       
+				        <apex:outputField value="{!o.stageName}">
+
+		 <apex:pageBlock title="Activity Log">
+		 <apex:pageBlockSection id="logSection" columns="3">
+							<apex:pageBlockSectionItem id="firstcolumn">  
+                                <apex:outputLabel value="Related To" for="whatIdOptions"/>
+                                <apex:selectList id="whatIdOptions" value="{!task.whatId}" multiselect="false" size="1" onchange="" >
+                                    <apex:selectOptions value="{!whatIdOptions}"/>
+                            	</apex:selectList>
+                            </apex:pageBlockSectionItem>
+                           <apex:pageBlockSectionItem id="secondcolumn">   
+                            	<apex:outputPanel >
+	                            	<apex:outputLabel id="type" value="{!$ObjectType.Task.fields.Type.label}"/>
+                    				<apex:inputField id="typeField" value="{!task.Type}" />
+	                         <!--    	<apex:outputLabel id="subject" value="{!$ObjectType.Task.fields.Subject.label}"/>
+	                            	<apex:inputField value="{!task.Subject}" /> -->
+	                            </apex:outputPanel>
+						 	</apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="Tcolumn">
+                            	<apex:outputPanel >
+                            		<apex:outputLabel id="descriptionfield" value="{!$ObjectType.Task.fields.Description.label}" for="noteField"/>
+		                            <apex:inputField id="noteField" value="{!task.description}"/><br/>
+		                      
+		                        </apex:outputPanel>
+							</apex:pageBlockSectionItem>                            
+              			</apex:pageBlockSection> 		
+		</apex:pageblock>
+</apex:form>
+</apex:page>

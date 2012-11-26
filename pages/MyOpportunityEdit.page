@@ -1,0 +1,194 @@
+<apex:page standardController="Opportunity" extensions="MyOpportunityEditController" tabStyle="My_Opportunities__tab" sidebar="false" standardstylesheets="false" showheader="true">
+   
+   <apex:includescript value="{!URLFOR($Resource.JQuery)}"/>
+    <style>             
+.form {
+overflow:hidden;
+	float:left;
+	/*width:60%;*/
+	width: 850px;
+	margin-top:10px;
+	padding-top:10px;
+	font: normal 1em verdana, arial, helvetica, sans-serif;
+	color: #333;
+	border: 2px solid #996;
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	/*padding-right: 50px;*/
+	margin-right: 50px;
+	
+	height:400px;
+}
+.bubbles {
+/*width:29%;*/
+width:350px;
+float:left;
+
+}
+ /*.form { background-color: white; }*/
+
+.pgblockbutton {
+background-color:#ffffff;
+
+}
+/*
+.nav {}
+.nav ul
+{
+list-style-type:none;
+margin:0;
+padding:0;
+}
+.nav li
+{
+display:inline;
+}
+*/
+
+#navigation {
+		    height:25px;
+		   
+		    padding-top:5px;
+		    padding-bottom:5px;
+		    /*background-color:#e9e9e9;*/
+		    //background-color:#DDF0F8;
+		    /*border-top:1px solid #fff;*/
+		    //border-top:1px solid #99CCE6;
+		    -moz-border-radius:0px 0px 10px 10px;
+		    -webkit-border-bottom-left-radius:10px;
+		    -webkit-border-bottom-right-radius:10px;
+		    border-bottom-left-radius:10px;
+		    border-bottom-right-radius:10px;
+		}
+		#navigation ul{
+		    list-style:none;
+			float:left;
+			margin-left:2px;
+		}
+		#navigation ul li{
+			float:left;
+		    border-right:1px solid #ccc;
+		    border-left:1px solid #ccc;
+		    position:relative;
+			margin:0px 2px;
+		}
+		#navigation ul li a{
+		    display:block;
+		    height:25px;
+		    background-color:#444;
+		    color:#fff;
+		    outline:none;
+		    font-weight:normal;
+		    text-decoration:none;
+		    line-height:25px;
+		    padding:0px 10px;
+		    border-right:1px solid #045A8B;
+		    border-left:1px solid #045A8B;
+		    border-radius: 3px;
+		    background:#f0f0f0;
+		    background:
+		    -webkit-gradient(linear, 0% 0%, 0% 100%, from(#73AEC9), color-stop(0.05, #73AEC9), color-stop(0.05, #338AB0), to(#0571A6));
+		        /*-webkit-gradient(
+		        linear,
+		        left bottom,
+		        left top,
+		        color-stop(0.09, rgb(240,240,240)),
+		        color-stop(0.55, rgb(227,227,227)),
+		        color-stop(0.78, rgb(240,240,240))
+		        );*/
+		    background:
+		        -moz-linear-gradient(
+		        center bottom,
+		        rgb(240,240,240) 9%,
+		        rgb(227,227,227) 55%,
+		        rgb(240,240,240) 78%
+		        )}
+		 
+#submit {
+		    height:25px;
+		    padding-top:5px;
+		    padding-bottom:5px;
+		    /*background-color:#e9e9e9;*/
+		    //background-color:#DDF0F8;
+		    /*border-top:1px solid #fff;*/
+		    //border-top:1px solid #99CCE6;
+		    -moz-border-radius:0px 0px 10px 10px;
+		    -webkit-border-bottom-left-radius:10px;
+		    -webkit-border-bottom-right-radius:10px;
+		    border-bottom-left-radius:10px;
+		    border-bottom-right-radius:10px;
+		}
+		#submit ul{
+		    list-style:none;
+			float:left;
+			margin-left:300px;
+		}
+		#submit ul li{
+			float:left;
+		    border-right:1px solid #ccc;
+		    border-left:1px solid #ccc;
+		    position:relative;
+			margin:0px 2px;
+		}
+		#submit ul li a{
+		    display:block;
+		    height:25px;
+		    background-color:#444;
+		    color:#fff;
+		    outline:none;
+		    font-weight:normal;
+		    text-decoration:none;
+		    line-height:25px;
+		    padding:0px 10px;
+		    border-right:1px solid #045A8B;
+		    border-left:1px solid #045A8B;
+		    border-radius: 3px;
+		    background:#f0f0f0;
+		    background:
+		    -webkit-gradient(linear, 0% 0%, 0% 100%, from(#73AEC9), color-stop(0.05, #73AEC9), color-stop(0.05, #338AB0), to(#0571A6));
+		        /*-webkit-gradient(
+		        linear,
+		        left bottom,
+		        left top,
+		        color-stop(0.09, rgb(240,240,240)),
+		        color-stop(0.55, rgb(227,227,227)),
+		        color-stop(0.78, rgb(240,240,240))
+		        );*/
+		    background:
+		        -moz-linear-gradient(
+		        center bottom,
+		        rgb(240,240,240) 9%,
+		        rgb(227,227,227) 55%,
+		        rgb(240,240,240) 78%
+		        )}
+		
+</style>
+<c:StageProgressBar opptyStageName="{!oppty.StageName}" canvasWidth="750"/>
+<apex:form id="opportunityWizardForm"> 
+<div class="form">
+           			 	<!-- <apex:commandButton value="Save" id="save" action="{!save}" />
+						<apex:commandButton value="Cancel" id="cancel" action="{!cancelOpportunity}"/> -->
+						<div id="submit">
+							<ul>
+								<li><apex:commandLink action="{!save}" >Save</apex:commandLink></li>
+								<li><apex:commandLink action="{!cancelOpportunity}" >Cancel</apex:commandLink></li>
+							</ul>
+						
+						</div>
+					 				
+                    <c:MyOpportunityWidget id="opptyWidget" oppty="{!oppty}"/>        
+                    
+                    
+                     
+
+</div>
+
+        <div class="bubbles" >  
+        <!--   <c:BubbleWidget /> -->
+           <c:BubbleWidget displayType="1" stringToSplit="{!stringToSplit_1}" title="{!accountTitle}" contact="{!contactId}" subTitle="" rendered="{!accountHasData}"/>  
+          <!--  <c:BubbleWidget displayType="1" stringToSplit="{!stringToSplit_1}" title="{!accountTitle}" subTitle="" rendered="{!accountHasData}"/> -->   
+            
+        </div>
+</apex:form>
+</apex:page>

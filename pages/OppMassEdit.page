@@ -1,0 +1,21 @@
+<apex:page standardcontroller="Opportunity" extensions="OppMassEdit" recordSetVar="opportunities" sidebar="false" showheader="false" standardstylesheets="false"> 
+	<apex:form >
+	<div class="opptable">
+		<table>
+				<tr><th>Name</th><td><apex:inputText id="oppUpdateName" value="{!OpportunityUpdateName}" /></td></tr>
+				<tr><th>Close Date</th><td><apex:inputText id="oppUpdateCloseDate" value="{!OpportunityUpdateCloseDate}" onclick="datePrompt(); return false;" /></td></tr>
+				<tr><th>Type</th><td><apex:selectList id="Types" value="{!OpportunityUpdateType}" multiselect="false" size="1">
+							<apex:selectOptions value="{!Types}"/>
+							</apex:selectList></td></tr>
+				<tr><th>Stage</th><td> <apex:selectList id="StageNames" value="{!OpportunityUpdateStageName}" multiselect="false" size="1">
+							<apex:selectOptions value="{!StageNames}"/>
+							</apex:selectList></td></tr>
+		</table>
+				<apex:commandButton id="addBtn" value="Update" action="{!updateModal}"/>
+				<apex:commandButton id="cancelBtn" value="Cancel" action="{!cancelModal}"/>
+				</div> 
+			</apex:form>
+<!--  <apex:inputText id="oppUpdateType" value="{!OpportunityUpdateType}" />
+<apex:inputText id="oppUpdateStageName" value="{!OpportunityUpdateStageName}" />-->		 
+		
+</apex:page>

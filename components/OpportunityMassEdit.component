@@ -1,0 +1,28 @@
+<apex:component standardcontroller="Opportunity" extensions="OppMapEdit" layout="none">
+	<apex:form>
+		<apex:pageblock >
+			<apex:pageblockbuttons location="bottom">
+				<apex:commandButton id="addBtn" value="Update" action="{!updateModal}"/>
+				<apex:commandButton id="cancelBtn" value="Cancel" action="{!cancelModal}"/> 
+			</apex:pageblockbuttons>
+			<apex:pageblocksection >
+			<apex:pageBlockSectionItem>
+				<apex:facet name="header">Enter Project Name</apex:facet>
+				<apex:inputText id="newProjectName" value="{!OpportunityUpdateName}" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem>
+				<apex:facet name="header">Enter Project Name</apex:facet>
+				<apex:inputText id="newProjectName" value="{!OpportunityUpdateCloseDate}" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem>
+				<apex:facet name="header">Enter Project Name</apex:facet>
+				<apex:inputText id="newProjectName" value="{!OpportunityUpdateType}" />
+				</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem>
+				<apex:facet name="header">Enter Project Name</apex:facet>
+				<apex:inputText id="newProjectName" value="{!OpportunityUpdateStageName}" />
+				</apex:pageBlockSectionItem>
+			</apex:pageblocksection>
+		</apex:pageblock>
+	</apex:form> 
+</apex:component>

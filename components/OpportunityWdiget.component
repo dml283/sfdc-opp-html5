@@ -1,0 +1,445 @@
+<apex:component id="opptyEditWizard" controller="OpportunityWidgetController" AllowDML="true">
+    <apex:attribute name="oppty" type="Opportunity" assignTo="{!oppty}" required="true" description="Opportunity to update."/>
+    
+    <!-- <apex:stylesheet value="{!URLFOR($Resource.OpportunityWizard, '/css/style.css')}" />-->
+    <style>
+        *{
+            margin:0px;
+            padding:0px;
+        }
+       
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function(){
+        
+            /*
+                validates errors on all the fieldsets
+                records if the Form has errors in $('form[name$="opportunityWizardForm"]').data()
+            */
+            function validateSteps(fieldsetCount){
+                var FormErrors = false;
+                for(var i = 1; i < fieldsetCount; ++i){
+                    var error = validateStep(i);
+                    if(error == -1)
+                        FormErrors = true;
+                }
+                $('form[name$="opportunityWizardForm"]').data('errors',FormErrors); 
+            }
+            
+            /*
+                validates one fieldset
+                and returns -1 if errors found, or 1 if not
+            */
+            function validateStep(step, fieldsetCount){
+                if(step == fieldsetCount) return;
+                
+                var error = 1;
+                var hasError = false;
+                $('form[name$="opportunityWizardForm"]').find('fieldset:nth-child('+ parseInt(step) +')').find(':input:not(button)').each(function(){
+                    var $this       = $(this);
+                    var valueLength = jQuery.trim($this.val()).length;
+                    
+                if(valueLength == '' && (($this[0].previousSibling && $this[0].previousSibling.className && $this[0].previousSibling.className == 'requiredBlock') ||
+                    ($this.parent()[0].previousSibling && $this.parent()[0].previousSibling.className && $this.parent()[0].previousSibling.className == 'requiredBlock'))){
+                        hasError = true;
+                        $this.css('background-color','#FFEDEF');
+                    }
+                    else
+                        $this.css('background-color','#FFFFFF');    
+                });
+                var $link = $('#navigation li:nth-child(' + parseInt(step) + ') a');
+                $link.parent().find('.errorImg,.checked').remove();
+                
+                var valclass = 'checked';
+                if(hasError){
+                    error = -1;
+                    valclass = 'errorImg';
+                }
+                $('<span class="'+valclass+'"></span>').insertAfter($link);
+                
+                return error;
+            }
+
+            function bindNavigation(widths, current, fieldsetCount) {
+                /*
+                    when clicking on a navigation link 
+                    the form slides to the corresponding fieldset
+                */
+                $('#navigation a').bind('click',function(e){
+                    var $this   = $(this);
+                    var prev    = current;
+                    $this.closest('ul').find('li').removeClass('selected');
+                    $this.parent().addClass('selected');
+                    /*
+                        we store the position of the link
+                        in the current variable 
+                    */
+                    current = $this.parent().index() + 1;
+                    /*
+                        animate / slide to the next or to the corresponding
+                        fieldset. The order of the links in the navigation
+                        is the order of the fieldsets.
+                        Also, after sliding, we trigger the focus on the first 
+                        input element of the new fieldset
+                        If we clicked on the last link (confirmation), then we validate
+                        all the fieldsets, otherwise we validate the previous one
+                        before the form slided
+                    */
+                    $('#steps').stop().animate({
+                        marginLeft: '-' + widths[current-1] + 'px'
+                    },500,function(){
+                        if(current == fieldsetCount)
+                            validateSteps(fieldsetCount);
+                        else
+                            validateStep(prev, fieldsetCount);
+                        $('form[name$="opportunityWizardForm"]').find('fieldset:nth-child('+ parseInt(current) +')').find(':input:first').focus();  
+                    });
+                    e.preventDefault();
+                });
+                return current;
+            }                               
+            
+            function validateAndSubmit(){
+                /*
+                    if there are errors don't allow the user to submit
+                */
+                $('#registerButton').bind('click',function(){
+                    if($('form[name$="opportunityWizardForm"]').data('errors')){
+                        alert('Please correct the errors in the Form');
+                        return false;
+                    }   
+                });
+            }
+
+            function onTabClick() { 
+                /*
+                    clicking on the tab (on the last input of each fieldset), makes the form
+                    slide to the next step
+                */
+                $('fieldset').each(function(){
+                    var $fieldset = $(this);
+                    $fieldset.children(':last').find(':input').keydown(function(e){
+                        if (e.which == 9){
+                            $('#navigation li:nth-child(' + (parseInt(current)+1) + ') a').click();
+                            /* force the blur for validation */
+                            $(this).blur();
+                            e.preventDefault();
+                        }
+                    });
+                });
+            }
+
+            function leadUpgradeChange(leadGradeVal) {
+                var interestUnselected = $('[id$="interest_unselected"]');
+                var interestLabel = $('[id$="interestLabel"]');
+                var currentTools = $('[id$="currentTools"]');
+                var currentToolsLabel = $('[id$="currentToolsLabel"]');
+                interestUnselected.val("");
+                interestUnselected.parent().parent().show();
+                interestLabel.show();
+                currentTools.val("");
+                currentTools.parent().show();
+                currentToolsLabel.show();
+                if (leadGradeVal != null && (leadGradeVal == 'A' || leadGradeVal == 'C'))
+                {
+                    interestUnselected.parent().parent().hide();
+                    interestLabel.hide();
+                }
+
+                if (leadGradeVal != null && (leadGradeVal == 'B' || leadGradeVal == 'C'))
+                {
+                    currentTools.parent().hide();
+                    currentToolsLabel.hide();
+                }
+            }
+
+            function stageNameChange(stageNameVal){
+                var orderBilling = $('[id$="orderBilling"]');
+                orderBilling.hide();
+                if (stageNameVal == 'Qualified' || stageNameVal == 'Negotiation') {
+                    orderBilling.show();
+                }
+
+                var orderInformation = $('[id$="orderInformation"]');
+                orderInformation.hide();
+                if (stageNameVal == 'Negotiation') {
+                    orderInformation.show();
+                }
+            }
+
+            function initialize(){
+                
+                /*
+                    number of fieldsets
+                */
+                var fieldsetCount = $('fieldset').length;
+                
+                /*
+                    current position of fieldset / navigation link
+                */
+                var current = 1;
+                /*
+                    sum and save the widths of each one of the fieldsets
+                    set the final sum as the total width of the steps element
+                */
+                var stepsWidth  = 0;
+                var widthToAdjust = 0;
+                var widths = new Array();
+                $('#steps .step').each(function(i){
+                    var $step       = $(this);
+                    widths[i]       = stepsWidth;
+                    widthToAdjust   = $step.width()
+                    stepsWidth      += $step.width();
+                });
+                $('#steps').width(stepsWidth+widthToAdjust);
+                
+                /*
+                    to avoid problems in IE, focus the first input of the form
+                */
+                $('form[name$="opportunityWizardForm"]').find('fieldset:first').find(':input:first').focus();   
+                
+                /*
+                    show the navigation bar
+                */
+                $('#navigation').show();
+                
+                /*
+                    Bind navigation 
+                */
+                current = bindNavigation(widths, current, fieldsetCount);
+                
+                /* 
+                    Handle Tab Click
+                */
+                onTabClick(current);
+                
+                /*
+                    Validate and Submit the form
+                */
+                validateAndSubmit();
+
+                
+                var leadGrade = $('[id$="leadGrade"]');
+                leadGrade.bind("change", function() 
+                { 
+                    leadUpgradeChange(leadGrade.val());
+                });
+                if (leadGrade.val()) {
+                    leadUpgradeChange(leadGrade.val());
+                }
+                
+                var stageName = $('[id$="stageName"]');
+                stageName.bind("change", function() 
+                {
+                    stageNameChange(stageName.val());
+                });
+                if (stageName.val())
+                {
+                    stageNameChange(stageName.val());
+                }
+            }
+
+            initialize();           
+        });
+    
+    </script>
+    <style>
+   
+    </style>
+       
+
+        
+                <fieldset class="step">
+                    <legend class="fieldsetlegand" >Opportunity Information</legend>
+                    <apex:pageBlockSection id="OpportunityDetailSection" columns="2" collapsible="true" rendered="true">
+                        <apex:pageBlockSectionItem id="OpportunityNameSectionItem" helpText="{!$ObjectType.Opportunity.fields.Name.InlineHelpText}" >
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Name.label}"/> 
+                                <apex:inputField id="opportunityname" value="{!oppty.Name}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityAccountNameSectionItem" helpText="{!$ObjectType.Account.fields.Name.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Account.fields.Name.label}" /> 
+                            <apex:inputfield id="accountname" value="{!oppty.AccountId}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityTypeSectionItem" helpText="{!$ObjectType.Opportunity.fields.Type.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Type.label}" /> 
+                            <apex:inputfield id="opptyType" value="{!oppty.Type}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunitySalesChannelSectionItem" helpText="{!$ObjectType.Opportunity.fields.Sales_Channel__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Sales_Channel__c.label}" /> 
+                            <apex:inputfield id="salesChannel" value="{!oppty.Sales_Channel__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityCurrencyIsoCodeSectionItem" helpText="{!$ObjectType.Opportunity.fields.CurrencyIsoCode.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.CurrencyIsoCode.label}" /> 
+                            <apex:inputfield id="currencyIsoCode" value="{!oppty.CurrencyIsoCode}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityCloseDateSectionItem" helpText="{!$ObjectType.Opportunity.fields.CloseDate.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.CloseDate.label}" /> 
+                            <apex:inputfield id="closeDate" value="{!oppty.CloseDate}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityStageSectionItem" helpText="{!$ObjectType.Opportunity.fields.StageName.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.StageName.label}" /> 
+                            <apex:inputfield id="stageName" value="{!oppty.StageName}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityContractTermsSectionItem" helpText="{!$ObjectType.Opportunity.fields.Contract_Term_Months__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Contract_Term_Months__c.label}" /> 
+                            <apex:inputfield id="contractTerms" value="{!oppty.Contract_Term_Months__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityAgencyPercentageSectionItem" helpText="{!$ObjectType.Opportunity.fields.Agency_Percentage__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Agency_Percentage__c.label}" /> 
+                            <apex:inputfield id="AgencyPercentage" value="{!oppty.Agency_Percentage__c}" />
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>
+                </fieldset>
+                
+                <!--     <fieldset class="step">
+                    <legend class="fieldsetlegand" >Qualification</legend>
+                        <apex:pageBlockSection id="OpportunityQualificationSection" columns="2" collapsible="true" rendered="true">
+                        <apex:pageBlockSectionItem id="OpportunityLeadGradeSectionItem" helpText="{!$ObjectType.Opportunity.fields.Lead_Grade__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Lead_Grade__c.label}" /> 
+                            <apex:inputField id="leadGrade" value="{!oppty.Lead_Grade__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityAgencyPartnerSectionItem" helpText="{!$ObjectType.Opportunity.fields.Agency_of_Record_AOR__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Agency_of_Record_AOR__c.label}" /> 
+                            <apex:inputField id="agencyPartner" value="{!oppty.Agency_of_Record_AOR__c}" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem id="OpportunityCompanyTypeSectionItem" helpText="{!$ObjectType.Opportunity.fields.Company_Type__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Company_Type__c.label}" /> 
+                            <apex:inputField id="companyType" value="{!oppty.Company_Type__c}" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem id="OpportunityAORSectionItem" helpText="{!$ObjectType.Opportunity.fields.AOR__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.AOR__c.label}" /> 
+                            <apex:inputField id="aor" value="{!oppty.AOR__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityRecruitingTeamSizeSectionItem" helpText="{!$ObjectType.Opportunity.fields.Recruiting_Team_Size__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Recruiting_Team_Size__c.label}" /> 
+                            <apex:inputField id="recruitingTeamSize" value="{!oppty.Recruiting_Team_Size__c}" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem id="OpportunityJobsOnWebsiteSectionItem" helpText="{!$ObjectType.Opportunity.fields.Jobs_on_Website__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Jobs_on_Website__c.label}" /> 
+                            <apex:inputField id="jobsOnWebsite" value="{!oppty.Jobs_on_Website__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityInterestSectionItem" >
+                            <apex:outputLabel id="interestLabel" value="{!$ObjectType.Opportunity.fields.Interest__c.label}" /> 
+                            <apex:inputField id="interest" value="{!oppty.Interest__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityCurrentToolsSectionItem" >
+                            <apex:outputLabel id="currentToolsLabel" value="{!$ObjectType.Opportunity.fields.Current_Tools__c.label}" /> 
+                            <apex:inputField id="currentTools" value="{!oppty.Current_Tools__c}" />
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>
+                </fieldset>
+                <fieldset class="step">
+                    <legend class="fieldsetlegand">Description Information</legend>
+                        <apex:pageBlockSection id="OpportunityDescriptionSection" columns="1" collapsible="true" rendered="true">
+                        <apex:pageBlockSectionItem id="OpportunityDescriptionSectionItem" helpText="{!$ObjectType.Opportunity.fields.Description.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Description.label}" /> 
+                            <apex:inputTextArea richText="true" rows="10" id="description" value="{!oppty.Description}" />
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>
+                </fieldset>
+                
+                <fieldset class="step">
+                    <legend class="fieldsetlegand">Order Billing &amp; Shipping Address</legend>
+                    <apex:pageBlockSection id="OpportunityOrderBillingAddressSection" columns="2" collapsible="true" rendered="true" >
+                        <apex:pageBlockSectionItem id="OpportunityOrderBillingContactSectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_Contact__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Contact__c.label}" /> 
+                                <apex:inputField id="orderBillingContact" value="{!oppty.Order_Billing_Contact__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityOrderBillingEmailSectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_Email__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Email__c.label}" /> 
+                                <apex:inputField id="orderBillingEmail" value="{!oppty.Order_Billing_Email__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityOrderBillingAddr1SectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_Address_1__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Address_1__c.label}" /> 
+                                <apex:inputField id="orderBillingAddr1" value="{!oppty.Order_Billing_Address_1__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityOrderShippingAddr1SectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Shipping_Address_1__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Address_1__c.label}" /> 
+                                <apex:inputField id="orderShippingAddr1" value="{!oppty.Order_Shipping_Address_1__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderBillingAddr2SectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_Address_2__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Address_2__c.label}" /> 
+                                <apex:inputField id="orderBillingAddr2" value="{!oppty.Order_Billing_Address_2__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderShippingAddr2SectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Shipping_Address_2__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Address_2__c.label}" /> 
+                                <apex:inputField id="orderShippingAddr2" value="{!oppty.Order_Shipping_Address_2__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderBillingCitySectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_City__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_City__c.label}" /> 
+                                <apex:inputField id="orderBillingCity" value="{!oppty.Order_Billing_City__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderShippingCitySectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Shipping_City__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_City__c.label}" /> 
+                                <apex:inputField id="orderShippingCity" value="{!oppty.Order_Shipping_City__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderBillingStateSectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_State_Province__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_State_Province__c.label}" /> 
+                                <apex:inputField id="orderBillingState" value="{!oppty.Order_Billing_State_Province__c}" />
+                        </apex:pageBlockSectionItem>
+                        
+                            <apex:pageBlockSectionItem id="OpportunityOrderShippingStateSectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Shipping_State__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_State__c.label}" /> 
+                                <apex:inputField id="orderShippingState" value="{!oppty.Order_Shipping_State__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderBillingCountrySectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_Country__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Country__c.label}" /> 
+                                <apex:inputField id="orderBillingCountry" value="{!oppty.Order_Billing_Country__c}" />
+                        </apex:pageBlockSectionItem>
+                        
+                            <apex:pageBlockSectionItem id="OpportunityOrderShippingCountrySectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Shipping_Country__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Country__c.label}" /> 
+                                <apex:inputField id="orderShippingCountry" value="{!oppty.Order_Shipping_Country__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderBillingZipSectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Billing_Zip_Code__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Billing_Zip_Code__c.label}" /> 
+                                <apex:inputField id="orderBillingZip" value="{!oppty.Order_Billing_Zip_Code__c}" />
+                        </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem id="OpportunityOrderShippingZipSectionItem" helpText="{!$ObjectType.Opportunity.fields.Order_Shipping_Postal_Zip__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Order_Shipping_Postal_Zip__c.label}" /> 
+                                <apex:inputField id="orderShippingZip" value="{!oppty.Order_Shipping_Postal_Zip__c}" />
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>                          
+                </fieldset>
+                <fieldset class="step">
+                    <legend class="fieldsetlegand">Order Information</legend>
+                    <apex:pageBlockSection id="OpportunityOrderInfoSection" columns="2" collapsible="true" rendered="true" >
+                        <apex:pageBlockSectionItem id="OpportunityInfoPaymentPeriodSectionItem" helpText="{!$ObjectType.Opportunity.fields.Payment_Period__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Payment_Period__c.label}" /> 
+                            <apex:inputField id="paymentPeriod" value="{!oppty.Payment_Period__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityInfoPaymentMethodSectionItem" helpText="{!$ObjectType.Opportunity.fields.Payment_Method__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.Payment_Method__c.label}" /> 
+                            <apex:inputField id="paymentMethod" value="{!oppty.Payment_Method__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="OpportunityInfoPORequiredSectionItem" helpText="{!$ObjectType.Opportunity.fields.PO_Required__c.InlineHelpText}">
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.PO_Required__c.label}" /> 
+                            <apex:inputField id="poRequired" value="{!oppty.PO_Required__c}" />
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>                          
+                </fieldset> -->                    
+        
+            <div id="navigation" style="display:none;">
+                <ul>
+                    <li class="selected">
+                        <a href="#">Opportunity Information</a>
+                    </li>
+                    <li>
+                        <a href="#">Qualification</a>
+                    </li>
+                    <li>
+                        <a href="#">Description</a>
+                    </li>
+                    <li id="orderBilling" style="display:{!IF(stageName == 'Qualified' || stageName == 'Negotiation', '', 'none')}">
+                        <a href="#">Order Billing &amp; Shipping Address</a>
+                    </li>
+                    <li id="orderInformation" style="display:{!IF(stageName != 'Negotiation', 'none', '')}">
+                        <a href="#">Order Information</a>
+                    </li>
+                </ul>
+            </div>
+    
+</apex:component>

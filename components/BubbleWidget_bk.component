@@ -1,0 +1,102 @@
+<apex:component controller="WidgetController">    
+    <style>             
+
+    </style>
+    <script>
+        $(document).ready(function(){
+            $("div[id*='opportunityWizardPage']").removeClass('bPageBlock brndScnBrd apexDefaultPageBlock secondaryPalette');
+        });                 
+    </script>
+    
+    <apex:attribute name="displayType" type="String" required="true" description="Display Type" />
+    <apex:attribute name="stringToSplit" type="String[]" assignTo="{!stringToSplit}" required="true" description="String to Split" />
+    <apex:attribute name="title" type="String" required="true" description="Title" />
+    <apex:attribute name="subTitle" type="String" required="false" description="Sub Title"/>
+    
+    <div class="leo-module mod-util mod-custom bubble">
+        <div class="header">
+            <h3><apex:outputText value="{!title}"/></h3>            
+        </div>
+        
+        <!-- T-Mobile -->       
+        <apex:pageBlock rendered="{!IF(displayType=='1', true, false)}" >
+            <div class="content">       
+                <table class="tmobile">            
+                    <apex:repeat value="{!tmobile_data}" var="r">
+                        <tr>                                                                                                                   
+                            <td>                    
+                                <apex:outputText value="{!r.label}" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td>
+                                <apex:outputLink value="{!r.content}" rendered="{!IF(r.contentType=='TEXT', true, false)}" >
+                                <apex:outputText value="{!r.content}" /></apex:outputLink>
+                                <apex:outputText value="{!r.content}" rendered="{!IF(r.contentType=='LINK', true, false)}"/>
+                            </td>                         
+                        </tr>
+                    </apex:repeat>                  
+                </table>
+            </div>
+        </apex:pageBlock>       
+        
+        <!-- Check Box -->
+        <apex:pageBlock rendered="{!IF(displayType=='2', true, false)}">
+            <div class="content">
+                <p class="sub-title"><apex:outputText value="{!subTitle}" /></p>
+                <apex:form >
+                    <table>               
+                        <apex:repeat value="{!checkbox_data}" var="r">
+                            <tr>                                                           
+                                <td><apex:inputCheckbox value="{!r.content}"/>
+                                    <apex:outputLabel value="{!r.label}"/></td>                                               
+                            </tr>
+                        </apex:repeat>                  
+                    </table>
+                </apex:form>
+            </div>
+        </apex:pageBlock>
+
+        <!-- similar ops -->
+        <apex:pageBlock rendered="{!IF(displayType=='3', true, false)}">
+             <div class="content">
+                 <table>
+                    <apex:repeat value="{!similar_ops_data}" var="r">
+                        <tr>                                                                                                                   
+                            <td>                    
+                                <apex:outputLink value="{!r.label}" ><apex:outputText value="{!r.label}" /></apex:outputLink></td>
+                            <td>                            
+                                <apex:outputText value="{!r.content}" /></td>                         
+                        </tr>
+                    </apex:repeat>                  
+                </table>
+            </div>
+        </apex:pageBlock>
+        
+        <!-- actions -->
+        <apex:pageBlock rendered="{!IF(displayType=='4', true, false)}">
+            <div class="content">
+                 <table>
+                    <apex:repeat value="{!actions_data}" var="r">
+                        <tr>                                                                                                                   
+                            <td><apex:outputLink value="{!r.label}" ><apex:outputText value="{!r.label}" />
+                            </apex:outputLink></td>                   
+                        </tr>
+                    </apex:repeat>                  
+                </table>
+            </div>
+        </apex:pageBlock>
+        
+        <!-- histories -->
+        <apex:pageBlock rendered="{!IF(displayType=='5', true, false)}">
+            <div class="content">
+                 <table>
+                    <apex:repeat value="{!histories_data}" var="r">
+                        <tr>                                                                                                                   
+                            <td>                    
+                                <apex:outputText value="{!r.label}" /><br />
+                                <span class="time"><apex:outputText value="{!r.content}" /></span></td>                                              
+                        </tr>
+                    </apex:repeat>                  
+                </table>
+            </div>
+        </apex:pageBlock>
+    </div>  
+</apex:component>
